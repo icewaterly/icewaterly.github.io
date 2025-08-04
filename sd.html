@@ -1,0 +1,116 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Shadow DOM 示例</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            height: 100vh;
+            margin: 0;
+            background-color: #f0f2f5;
+        }
+
+        #createShadowBtn {
+            padding: 10px 20px;
+            font-size: 16px;
+            cursor: pointer;
+            border: none;
+            border-radius: 5px;
+            background-color: #007bff;
+            color: white;
+            transition: background-color 0.3s;
+        }
+
+        #createShadowBtn:hover {
+            background-color: #0056b3;
+        }
+
+        #shadowHostContainer {
+            margin-top: 20px;
+            padding: 20px;
+            border: 2px dashed #007bff;
+            border-radius: 8px;
+            text-align: center;
+            width: 300px;
+            min-height: 100px;
+            display: none; /* 初始隐藏 */
+        }
+
+        /* 外部 CSS 无法影响 Shadow DOM 内部的元素 */
+        .shadow-title {
+            color: green; /* 这个样式只会影响主页面，不会影响 Shadow DOM */
+        }
+    </style>
+</head>
+<body>
+    <h1>点击按钮创建 Shadow DOM</h1>
+
+    <button id="createShadowBtn">创建 Shadow DOM</button>
+
+    <div id="shadowHostContainer">
+        <p class="shadow-title">我是一个外部的段落，颜色是绿色的</p>
+    </div>
+
+    <script>
+        document.getElementById('createShadowBtn').addEventListener('click', function() {
+            // 获取 Shadow Host 元素
+            const shadowHost = document.getElementById('shadowHostContainer');
+
+            // 如果 Shadow Root 已经存在，则不重复创建
+            if (shadowHost.shadowRoot) {
+                alert('Shadow DOM 已经存在！');
+                return;
+            }
+
+            // 1. 使用 attachShadow() 创建一个 Shadow Root
+            // 'open' 模式允许外部 JavaScript 访问 Shadow DOM
+            const shadowRoot = shadowHost.attachShadow({ mode: 'open' });
+
+            // 2. 向 Shadow Root 中添加内容（HTML 和 CSS）
+            shadowRoot.innerHTML = `
+                <style>
+                    /* 这里的样式是封装的，只对 Shadow Root 内部有效 */
+                    .shadow-box {
+                        background-color: #f8f9fa;
+                        padding: 15px;
+                        border-radius: 5px;
+                        border: 1px solid #ddd;
+                    }
+                    h3 {
+                        color: #dc3545; /* Shadow DOM 内部的标题是红色的 */
+                    }
+                    p {
+                        color: #495057; /* Shadow DOM 内部的段落是深灰色的 */
+                    }
+                </style>
+                <div class="shadow-box">
+                    <h3>我是 Shadow DOM 的标题</h3>
+                    <p>我是一个在 Shadow DOM 内部的段落。我的样式被完全封装，不会受到外部 CSS 的影响。</p>
+                </div>
+            `;
+
+            // 3. 显示宿主容器
+            shadowHost.style.display = 'block';
+
+            // 禁用按钮，避免重复创建
+            this.disabled = true;
+            this.innerText = 'Shadow DOM 已创建';
+
+            // 打印信息，演示 Shadow DOM 的封装性
+            console.log("主页面中查询 Shadow DOM 内部元素：");
+            const shadowTitle = document.querySelector('.shadow-box h3');
+            console.log(shadowTitle); // 结果为 null，无法直接查询
+            
+            console.log("\n通过 Shadow Root 访问内部元素：");
+            const innerTitle = shadowRoot.querySelector('h3');
+            console.log(innerTitle); // 结果为元素对象
+        });
+    </script>
+</body>
+</html>
